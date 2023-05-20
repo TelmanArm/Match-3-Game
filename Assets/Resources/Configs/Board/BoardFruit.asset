@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ee920464244c4bfaa76332ddb99c76e, type: 3}
+  m_Name: BoardFruit
+  m_EditorClassIdentifier: 
+  gridSize: {x: 8, y: 8}
+  startPoint: {x: -3.5, y: -3.5}
+  boardItemPrefab: {fileID: 6769575164409455537, guid: 6681822d38bb9f74ca0f397bbf767f5a, type: 3}
+  boardItemData:
+  - boardItemType: 0
+    sprite: {fileID: 21300000, guid: b7481a4c424715542a70ac1efc7468db, type: 3}
+  - boardItemType: 1
+    sprite: {fileID: 21300000, guid: a292bddf8693e00428dace4a7f770aa6, type: 3}
+  - boardItemType: 2
+    sprite: {fileID: 21300000, guid: 140169fe467b8b649aa2541e0c8d6c09, type: 3}
+  - boardItemType: 3
+    sprite: {fileID: 21300000, guid: 50dd2e8acaa7426438d693e39eb73026, type: 3}
+  - boardItemType: 4
+    sprite: {fileID: 21300000, guid: fbb6c45b2e0f5424cace793121f03e56, type: 3}
+  - boardItemType: 5
+    sprite: {fileID: 21300000, guid: 5b0c287fddf11b24d910a6b285ee1807, type: 3}
+  - boardItemType: 6
+    sprite: {fileID: 21300000, guid: 23c39604c54f9f944ac7791b186f3dce, type: 3}
+  closeGridFields:
+  - {x: 0, y: 0}
+  - {x: 0, y: 7}
+  - {x: 7, y: 0}
+  - {x: 7, y: 7}
+  animationSpeed: 0.3
