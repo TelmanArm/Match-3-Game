@@ -56,6 +56,15 @@ namespace Board
             UniTask task = _boardShuffle.ShuffleAsync(0.1f);
         }
 
+        public void Help()
+        {
+           var  possibleMatch = _boardMatchChecker.FindPossibleMatch();
+           foreach (var item in possibleMatch)
+           {
+               _boardItems[item].Mark();
+           }
+        }
+
         private void GenerateItems()
         {
             foreach (var gridItem in _grid.GridItems)

@@ -50,7 +50,7 @@ namespace Board
 
         public void Mark()
         {
-            transform.DOShakeScale(1f, 0.5f);
+            transform.DOShakeScale(0.5f, 0.5f);
         }
 
         public void OnBeginDrag(PointerEventData eventData)

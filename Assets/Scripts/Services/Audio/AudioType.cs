@@ -3,6 +3,7 @@ namespace Services.Audio
     public enum AudioType
     {
         Bg,
-        Match
+        Match,
+        Help
     }
 }

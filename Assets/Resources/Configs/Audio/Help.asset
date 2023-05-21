@@ -9,6 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37880e61119d43a8880a848fb987d051, type: 3}
-  m_Name: UI
+  m_Script: {fileID: 11500000, guid: 88c62295ced44ddf94e772358418ca15, type: 3}
+  m_Name: Help
   m_EditorClassIdentifier: 
+  audioType: 2
+  clip: {fileID: 8300000, guid: df6f500dafeec487b87f623c11e92436, type: 3}
+  mixerGroup: {fileID: 24300002, guid: 82a34245f34f140e8b0246902aa41a72, type: 2}
+  loop: 0
+  volume: 0.894
