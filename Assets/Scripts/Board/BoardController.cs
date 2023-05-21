@@ -35,23 +35,25 @@ namespace Board
         private AudioService _audioService;
 
         [Inject]
-        private void Initialize(UiService uiService, LogService logService, GameData gameData, AudioService audioService)
+        private void Initialize(UiService uiService, LogService logService, GameData gameData,
+            AudioService audioService)
         {
             _uiService = uiService;
             _logService = logService;
             _gameData = gameData;
             _audioService = audioService;
         }
+
         public void Setup()
         {
             _grid = new GridController();
             _grid.Setup(boardConfig);
             _boardItems = new Dictionary<Vector2Int, IBordItem>();
-            _boardMatchChecker = new BoardMatchChecker(_boardItems);
-            _boardItemSwapper = new BoardItemSwapper(_boardItems);
-            _boardShuffle = new BoardShuffle(_boardItems);
+            _boardItemSwapper = new BoardItemSwapper(_boardItems, _grid);
+            _boardMatchChecker = new BoardMatchChecker(_boardItems, _boardItemSwapper);
             GenerateItems();
-            UniTask task = _boardShuffle.ShuffleAsync();
+            _boardShuffle = new BoardShuffle(_boardItems, _grid, _boardItemSwapper);
+            UniTask task = _boardShuffle.ShuffleAsync(0.1f);
         }
 
         private void GenerateItems()
@@ -101,7 +103,7 @@ namespace Board
 
         private void ChangeMatchItem(IGridItem gridItem, int indexItem)
         {
-            if (_boardMatchChecker.GetItemMatch(gridItem.Key).Count > 0)
+            if (_boardMatchChecker.FindItemMatches(_boardItems[gridItem.Key]).Count > 0)
             {
                 indexItem++;
                 if (indexItem >= boardConfig.BoardItemData.Count)
@@ -135,7 +137,7 @@ namespace Board
             if (swapData.IsPossibly)
             {
                 _boardItemSwapper.Swap(swapData.FirstItem, swapData.SecondItem);
-                var matchItems = _boardMatchChecker.GetItemsMatch(swapData.FirstItem, swapData.SecondItem);
+                var matchItems = _boardMatchChecker.FindItemsMatches(swapData.FirstItem, swapData.SecondItem);
                 if (matchItems.Count > 0)
                 {
                     UniTask task = MatchAsync(matchItems, swapData, boardConfig.AnimationSpeed);
@@ -155,19 +157,11 @@ namespace Board
         private async UniTask MatchAsync(Dictionary<Vector2Int, IBordItem> matchItems, SwapData swapData,
             float duration)
         {
-            await SwapPosAsync(duration, swapData);
+            await _boardItemSwapper.SwapPosAsync(duration, swapData);
             await RemoveMatchedItemAsync(matchItems, duration);
             await AddNewItemsAsync(duration);
             await UpdateBoardAsync(duration);
-            await _boardShuffle.ShuffleAsync();
-
-        }
-        
-        private async UniTask SwapPosAsync(float duration, SwapData swapData)
-        {
-            _boardItems[swapData.SecondItem].MoveTo(_grid.GridItems[swapData.SecondItem].Position, duration);
-            _boardItems[swapData.FirstItem].MoveTo(_grid.GridItems[swapData.FirstItem].Position, duration);
-            await UniTask.Delay(TimeSpan.FromSeconds(duration));
+            await _boardShuffle.ShuffleAsync(duration);
         }
 
         private async UniTask RemoveMatchedItemAsync(Dictionary<Vector2Int, IBordItem> matchItems, float duration)
@@ -211,7 +205,7 @@ namespace Board
             var allMatch = new Dictionary<Vector2Int, IBordItem>();
             foreach (var items in _boardItems)
             {
-                var matchesForKey = _boardMatchChecker.GetItemMatch(items.Key);
+                var matchesForKey = _boardMatchChecker.FindItemMatches(items.Value);
                 foreach (var matchiItemtem in matchesForKey)
                 {
                     if (allMatch.ContainsKey(matchiItemtem.Key))

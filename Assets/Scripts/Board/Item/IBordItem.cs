@@ -13,6 +13,7 @@ namespace Board
         void MoveTo(Vector2 position, float duration = 0);
         GameObject GetGameObject();
         void Shake();
+        void Mark();
 
     }
 }

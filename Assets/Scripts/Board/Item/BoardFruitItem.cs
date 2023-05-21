@@ -45,7 +45,12 @@ namespace Board
 
         public void Shake()
         {
-            transform.DOShakePosition(0.2f, 0.1f);
+            transform.DOShakePosition(1f, 0.1f);
+        }
+
+        public void Mark()
+        {
+            transform.DOShakeScale(1f, 0.5f);
         }
 
         public void OnBeginDrag(PointerEventData eventData)
