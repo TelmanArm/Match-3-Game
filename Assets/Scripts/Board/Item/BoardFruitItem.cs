@@ -53,6 +53,16 @@ namespace Board
             transform.DOShakeScale(0.5f, 0.5f);
         }
 
+        public void Rest()
+        {
+          transform.localScale = Vector3.one;
+        }
+
+        public void RemoveEffect(float speed)
+        {
+            transform.DOScale(1.2f, speed);
+        }
+
         public void OnBeginDrag(PointerEventData eventData)
         {
             _isDrag = false;

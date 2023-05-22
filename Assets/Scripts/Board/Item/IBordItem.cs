@@ -14,6 +14,8 @@ namespace Board
         GameObject GetGameObject();
         void Shake();
         void Mark();
+        void Rest();
+        void RemoveEffect(float speed);
 
     }
 }

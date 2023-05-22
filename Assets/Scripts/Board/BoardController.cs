@@ -10,6 +10,7 @@ using Services.Log;
 using Services.Save;
 using Services.UI;
 using UnityEngine;
+using Utility.ObjectPooling;
 using Zenject;
 using AudioType = Services.Audio.AudioType;
 
@@ -24,28 +25,22 @@ namespace Board
 
         private Dictionary<Vector2Int, IBordItem> _boardItems;
         private IGrid _grid;
+        private GameObjectPool _objectPool;
         private BoardMatchChecker _boardMatchChecker;
         private BoardItemSwapper _boardItemSwapper;
         private BoardShuffle _boardShuffle;
-
-        private UiService _uiService;
-        private LogService _logService;
         private SaveService _saveService;
-        private GameData _gameData;
         private AudioService _audioService;
 
         [Inject]
-        private void Initialize(UiService uiService, LogService logService, GameData gameData,
-            AudioService audioService)
+        private void Initialize(AudioService audioService)
         {
-            _uiService = uiService;
-            _logService = logService;
-            _gameData = gameData;
             _audioService = audioService;
         }
 
         public void Setup()
         {
+            _objectPool = new GameObjectPool(boardConfig.BoardItemPrefab.gameObject, itemsHolder);
             _grid = new GridController();
             _grid.Setup(boardConfig);
             _boardItems = new Dictionary<Vector2Int, IBordItem>();
@@ -58,11 +53,11 @@ namespace Board
 
         public void Help()
         {
-           var  possibleMatch = _boardMatchChecker.FindPossibleMatch();
-           foreach (var item in possibleMatch)
-           {
-               _boardItems[item].Mark();
-           }
+            var possibleMatch = _boardMatchChecker.FindPossibleMatch();
+            foreach (var item in possibleMatch)
+            {
+                _boardItems[item].Mark();
+            }
         }
 
         private void GenerateItems()
@@ -96,7 +91,8 @@ namespace Board
                 {
                     IBordItem bordItem = _boardItems[gridItem.Key];
                     bordItem.OnMove -= OnMove;
-                    Destroy(bordItem.GetGameObject());
+                    bordItem.Rest();
+                    _objectPool.ReturnObjectToPool(boardItem.GetGameObject());
                     _boardItems[gridItem.Key] = null;
                 }
 
@@ -128,7 +124,8 @@ namespace Board
         private IBordItem GetBoardItem()
         {
             IBordItem bordItem;
-            bordItem = (IBordItem) Instantiate(boardConfig.BoardItemPrefab, itemsHolder);
+            //bordItem = (IBordItem) Instantiate(boardConfig.BoardItemPrefab, itemsHolder);
+            bordItem = _objectPool.GetObjectFromPool().GetComponent<IBordItem>();
             bordItem.SetActivity(true);
             return bordItem;
         }
@@ -179,8 +176,8 @@ namespace Board
             foreach (var item in matchItems)
             {
                 IBordItem bordItem = _boardItems[item.Key];
+                bordItem.RemoveEffect(duration);
                 bordItem.OnMove -= OnMove;
-                bordItem.GetGameObject().transform.DOScale(1.2f, boardConfig.AnimationSpeed);
             }
 
             await UniTask.Delay(TimeSpan.FromSeconds(duration));
@@ -188,12 +185,14 @@ namespace Board
             {
                 IBordItem bordItem = _boardItems[item.Key];
                 bordItem.OnMove -= OnMove;
-                Destroy(bordItem.GetGameObject());
+                bordItem.Rest();
+                _objectPool.ReturnObjectToPool(bordItem.GetGameObject());
                 _boardItems[item.Key] = null;
             }
 
             await UniTask.Delay(TimeSpan.FromSeconds(duration));
         }
+
 
         private async UniTask AddNewItemsAsync(float duration)
         {
