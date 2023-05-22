@@ -10,7 +10,6 @@ using Services.Log;
 using Services.Save;
 using Services.UI;
 using UnityEngine;
-using Utility.ObjectPooling;
 using Zenject;
 using AudioType = Services.Audio.AudioType;
 
@@ -18,17 +17,15 @@ namespace Board
 {
     public class BoardController : MonoBehaviour
     {
-        public event Action<Vector2Int> OnItemMove;
-
         [SerializeField] private BoardConfig boardConfig;
         [SerializeField] private Transform itemsHolder;
 
         private Dictionary<Vector2Int, IBordItem> _boardItems;
         private IGrid _grid;
-        private GameObjectPool _objectPool;
         private BoardMatchChecker _boardMatchChecker;
         private BoardItemSwapper _boardItemSwapper;
         private BoardShuffle _boardShuffle;
+
         private SaveService _saveService;
         private AudioService _audioService;
 
@@ -40,7 +37,6 @@ namespace Board
 
         public void Setup()
         {
-            _objectPool = new GameObjectPool(boardConfig.BoardItemPrefab.gameObject, itemsHolder);
             _grid = new GridController();
             _grid.Setup(boardConfig);
             _boardItems = new Dictionary<Vector2Int, IBordItem>();
@@ -91,8 +87,7 @@ namespace Board
                 {
                     IBordItem bordItem = _boardItems[gridItem.Key];
                     bordItem.OnMove -= OnMove;
-                    bordItem.Rest();
-                    _objectPool.ReturnObjectToPool(boardItem.GetGameObject());
+                    Destroy(bordItem.GetGameObject());
                     _boardItems[gridItem.Key] = null;
                 }
 
@@ -124,8 +119,7 @@ namespace Board
         private IBordItem GetBoardItem()
         {
             IBordItem bordItem;
-            //bordItem = (IBordItem) Instantiate(boardConfig.BoardItemPrefab, itemsHolder);
-            bordItem = _objectPool.GetObjectFromPool().GetComponent<IBordItem>();
+            bordItem = (IBordItem) Instantiate(boardConfig.BoardItemPrefab, itemsHolder);
             bordItem.SetActivity(true);
             return bordItem;
         }
@@ -176,8 +170,8 @@ namespace Board
             foreach (var item in matchItems)
             {
                 IBordItem bordItem = _boardItems[item.Key];
-                bordItem.RemoveEffect(duration);
                 bordItem.OnMove -= OnMove;
+                bordItem.RemoveEffect(duration);
             }
 
             await UniTask.Delay(TimeSpan.FromSeconds(duration));
@@ -185,14 +179,12 @@ namespace Board
             {
                 IBordItem bordItem = _boardItems[item.Key];
                 bordItem.OnMove -= OnMove;
-                bordItem.Rest();
-                _objectPool.ReturnObjectToPool(bordItem.GetGameObject());
+                Destroy(bordItem.GetGameObject());
                 _boardItems[item.Key] = null;
             }
 
             await UniTask.Delay(TimeSpan.FromSeconds(duration));
         }
-
 
         private async UniTask AddNewItemsAsync(float duration)
         {
