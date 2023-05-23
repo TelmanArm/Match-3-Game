@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using Board.Configs;
 using Board.Grid;
+using Board.Item;
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
-using Game;
 using Services.Audio;
-using Services.Log;
 using Services.Save;
-using Services.UI;
 using UnityEngine;
+using Utility.ObjectPooling;
 using Zenject;
 using AudioType = Services.Audio.AudioType;
 
@@ -22,10 +20,10 @@ namespace Board
 
         private Dictionary<Vector2Int, IBordItem> _boardItems;
         private IGrid _grid;
+        private GameObjectPool _pool;
         private BoardMatchChecker _boardMatchChecker;
         private BoardItemSwapper _boardItemSwapper;
         private BoardShuffle _boardShuffle;
-
         private SaveService _saveService;
         private AudioService _audioService;
 
@@ -37,6 +35,7 @@ namespace Board
 
         public void Setup()
         {
+            _pool = new GameObjectPool(boardConfig.BoardItemPrefab.gameObject, itemsHolder);
             _grid = new GridController();
             _grid.Setup(boardConfig);
             _boardItems = new Dictionary<Vector2Int, IBordItem>();
@@ -50,10 +49,9 @@ namespace Board
         public void Help()
         {
             var possibleMatch = _boardMatchChecker.FindPossibleMatch();
-            foreach (var item in possibleMatch)
-            {
-                _boardItems[item].Mark();
-            }
+            int index = GetRandom(0, possibleMatch.Count);
+            Vector2Int key = possibleMatch[index];
+            _boardItems[key].Mark();
         }
 
         private void GenerateItems()
@@ -87,7 +85,8 @@ namespace Board
                 {
                     IBordItem bordItem = _boardItems[gridItem.Key];
                     bordItem.OnMove -= OnMove;
-                    Destroy(bordItem.GetGameObject());
+                    bordItem.Rest();
+                    _pool.ReturnObjectToPool(bordItem.GetGameObject());
                     _boardItems[gridItem.Key] = null;
                 }
 
@@ -119,7 +118,7 @@ namespace Board
         private IBordItem GetBoardItem()
         {
             IBordItem bordItem;
-            bordItem = (IBordItem) Instantiate(boardConfig.BoardItemPrefab, itemsHolder);
+            bordItem = _pool.GetObjectFromPool().GetComponent<IBordItem>();
             bordItem.SetActivity(true);
             return bordItem;
         }
@@ -179,7 +178,8 @@ namespace Board
             {
                 IBordItem bordItem = _boardItems[item.Key];
                 bordItem.OnMove -= OnMove;
-                Destroy(bordItem.GetGameObject());
+                bordItem.Rest();
+                _pool.ReturnObjectToPool(bordItem.GetGameObject());
                 _boardItems[item.Key] = null;
             }
 

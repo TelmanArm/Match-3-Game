@@ -1,4 +1,5 @@
 using System;
+using Board.Item;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -50,12 +51,13 @@ namespace Board
 
         public void Mark()
         {
-            transform.DOShakeScale(0.5f, 0.5f);
+            transform.DOShakeRotation(2f, 30f);
         }
 
         public void Rest()
         {
           transform.localScale = Vector3.one;
+          transform.position = Vector3.zero;
         }
 
         public void RemoveEffect(float speed)

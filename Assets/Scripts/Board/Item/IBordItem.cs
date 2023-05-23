@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Board
+namespace Board.Item
 {
     public interface IBordItem
     {
